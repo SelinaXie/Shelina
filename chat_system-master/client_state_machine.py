@@ -5,6 +5,8 @@ Created on Sun Apr  5 00:00:32 2015
 """
 from chat_utils import *
 import json
+from Encrypt import *
+pk=prpcrypt('keyskeyskeyskeys') #16 digits
 
 class ClientSM:
     def __init__(self, s):
@@ -121,8 +123,10 @@ class ClientSM:
 # This is event handling instate "S_CHATTING"
 #==============================================================================
         elif self.state == S_CHATTING:
-            if len(my_msg) > 0:     # my stuff going out
-                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg}))
+            if len(my_msg) > 0: # my stuff going out
+                #encrypt
+                my_msg_en=pk.encrypt(my_msg)
+                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg_en}))
                 if my_msg == 'bye':
                     self.disconnect()
                     self.state = S_LOGGEDIN
@@ -134,7 +138,7 @@ class ClientSM:
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
                 else:
-                    self.out_msg += peer_msg["from"] + peer_msg["message"]
+                    self.out_msg += peer_msg["from"] + pk.decrypt(peer_msg["message"])
 
 
             # Display the menu again
