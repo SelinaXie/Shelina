@@ -3,6 +3,7 @@ Created on Sun Apr  5 00:00:32 2015
 
 @author: zhengzhang
 """
+import urllib.request
 from chat_utils import *
 import json
 from Encrypt import *
@@ -103,7 +104,64 @@ class ClientSM:
                     if (len(poem) > 0):
                         self.out_msg += poem + '\n\n'
                     else:
-                        self.out_msg += 'Sonnet ' + poem_idx + ' not found\n\n'
+                        self.out_msg += 'Sonnet2333' + poem_idx + ' not found\n\n'
+                        
+                elif my_msg[0] == 't' :
+                    while True:
+                        text_input = input()
+                        
+                        if text_input == 'q':
+                            break
+                        else:
+                    
+                        
+                            api_url = "http://openapi.tuling123.com/openapi/api/v2"
+                            
+
+                            req = {
+                                "perception":
+                               {
+                                    "inputText":
+                                    {
+                                       "text": text_input
+                                    },
+
+                                    "selfInfo":
+                                    {
+                                        "location":
+                                        {
+                                            "city": "上海",
+                                            "province": "上海",
+                                            "street": "文汇路"
+                                        }
+                                    }
+                                },
+
+                                "userInfo": 
+                                {
+                                    "apiKey": "0cf352ad917f4e7f9a1f56bc70db712a",
+                                    "userId": "ABC" 
+                                }
+                            }
+                          # print(req)
+                          # 将字典格式的req编码为utf8 
+                            req = json.dumps(req).encode('utf8')
+                          # print(req)
+
+
+                            http_post = urllib.request.Request(api_url, data=req, headers={'content-type': 'application/json'})
+                            response = urllib.request.urlopen(http_post)
+                            response_str = response.read().decode('utf8')
+                          # print(response_str)
+                            response_dic = json.loads(response_str)
+                          # print(response_dic)
+                            results_text = response_dic['results'][0]['values']['text']
+                            print('Turing的回答：',results_text)
+                           
+
+
+                          
+               
 
                 else:
                     self.out_msg += menu
