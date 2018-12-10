@@ -3,8 +3,11 @@ Created on Sun Apr  5 00:00:32 2015
 
 @author: zhengzhang
 """
+import urllib.request
 from chat_utils import *
 import json
+from Encrypt import *
+pk=prpcrypt('keyskeyskeyskeys') #16 digits
 
 class ClientSM:
     def __init__(self, s):
@@ -101,7 +104,64 @@ class ClientSM:
                     if (len(poem) > 0):
                         self.out_msg += poem + '\n\n'
                     else:
-                        self.out_msg += 'Sonnet ' + poem_idx + ' not found\n\n'
+                        self.out_msg += 'Sonnet2333' + poem_idx + ' not found\n\n'
+                        
+                elif my_msg[0] == 't' :
+                    while True:
+                        text_input = input()
+                        
+                        if text_input == 'q':
+                            break
+                        else:
+                    
+                        
+                            api_url = "http://openapi.tuling123.com/openapi/api/v2"
+                            
+
+                            req = {
+                                "perception":
+                               {
+                                    "inputText":
+                                    {
+                                       "text": text_input
+                                    },
+
+                                    "selfInfo":
+                                    {
+                                        "location":
+                                        {
+                                            "city": "上海",
+                                            "province": "上海",
+                                            "street": "文汇路"
+                                        }
+                                    }
+                                },
+
+                                "userInfo": 
+                                {
+                                    "apiKey": "0cf352ad917f4e7f9a1f56bc70db712a",
+                                    "userId": "ABC" 
+                                }
+                            }
+                          # print(req)
+                          # 将字典格式的req编码为utf8 
+                            req = json.dumps(req).encode('utf8')
+                          # print(req)
+
+
+                            http_post = urllib.request.Request(api_url, data=req, headers={'content-type': 'application/json'})
+                            response = urllib.request.urlopen(http_post)
+                            response_str = response.read().decode('utf8')
+                          # print(response_str)
+                            response_dic = json.loads(response_str)
+                          # print(response_dic)
+                            results_text = response_dic['results'][0]['values']['text']
+                            print('Turing的回答：',results_text)
+                           
+
+
+                          
+               
 
                 else:
                     self.out_msg += menu
@@ -121,8 +181,10 @@ class ClientSM:
 # This is event handling instate "S_CHATTING"
 #==============================================================================
         elif self.state == S_CHATTING:
-            if len(my_msg) > 0:     # my stuff going out
-                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg}))
+            if len(my_msg) > 0: # my stuff going out
+                #encrypt
+                my_msg_en=pk.encrypt(my_msg)
+                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg_en}))
                 if my_msg == 'bye':
                     self.disconnect()
                     self.state = S_LOGGEDIN
@@ -134,7 +196,7 @@ class ClientSM:
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
                 else:
-                    self.out_msg += peer_msg["from"] + peer_msg["message"]
+                    self.out_msg += peer_msg["from"] + pk.decrypt(peer_msg["message"])
 
 
             # Display the menu again
