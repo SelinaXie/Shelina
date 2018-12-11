@@ -3,7 +3,8 @@ Created on Sun Apr  5 00:00:32 2015
 
 @author: zhengzhang
 """
-
+import pygame
+pygame.mixer.init()
 from chat_utils import *
 import json
 from binascii import b2a_hex, a2b_hex
@@ -37,6 +38,10 @@ class ClientSM:
         if response["status"] == "success":
             self.peer = peer
             self.out_msg += 'You are connected with '+ self.peer + '\n'
+            pygame.mixer.music.load("Connect.mp3")
+            if pygame.mixer.music.get_busy()==False:
+              pygame.mixer.music.play()
+            
             return (True)
         elif response["status"] == "busy":
             self.out_msg += 'User is busy. Please try again later\n'
@@ -49,6 +54,7 @@ class ClientSM:
     def disconnect(self):
         msg = json.dumps({"action":"disconnect"})
         mysend(self.s, msg)
+
         self.out_msg += 'You are disconnected from ' + self.peer + '\n'
         self.peer = ''
 
@@ -64,6 +70,9 @@ class ClientSM:
             if len(my_msg) > 0:
 
                 if my_msg == 'q':
+                    bye=pygame.mixer.Sound("Goodbye.wav")
+                    bye.play()
+                    pygame.time.delay(5000)
                     self.out_msg += 'See you next time!\n'
                     self.state = S_OFFLINE
 
@@ -151,7 +160,10 @@ class ClientSM:
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
                 else:
+
                     self.out_msg += peer_msg["from"] + pk.decrypt(peer_msg["message"])
+                    new=pygame.mixer.Sound("New.wav")
+                    new.play()
 
 
             # Display the menu again
