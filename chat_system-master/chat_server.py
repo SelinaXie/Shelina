@@ -4,6 +4,7 @@ Created on Tue Jul 22 00:47:05 2014
 @author: alina, zzhang
 """
 
+import urllib.request
 import time
 import socket
 import select
@@ -14,6 +15,7 @@ import json
 import pickle as pkl
 from chat_utils import *
 import chat_group as grp
+from binascii import b2a_hex, a2b_hex
 
 class Server:
     def __init__(self):
@@ -177,6 +179,60 @@ class Server:
                     mysend(to_sock, json.dumps({"action":"disconnect"}))
 #==============================================================================
 #                 the "from" guy really, really has had enough
+#==============================================================================
+            elif msg["action"] == 'robot':
+            
+        
+                    text_input = msg["target"]
+                    api_url = "http://openapi.tuling123.com/openapi/api/v2"
+                    req = {
+                        "perception":
+                       {
+                            "inputText":
+                            {
+                               "text": text_input
+                            },
+
+                            "selfInfo":
+                            {
+                                "location":
+                                {
+                                    "city": "上海",
+                                    "province": "上海",
+                                    "street": "文汇路"
+                                }
+                            }
+                        },
+
+                        "userInfo": 
+                        {
+                            "apiKey": "0cf352ad917f4e7f9a1f56bc70db712a",
+                            "userId": "ABC" 
+                        }
+                    }
+                 
+                  # 将字典格式的req编码为utf8 
+                    req = json.dumps(req).encode('utf8')
+                  # print(req)
+
+
+                    http_post = urllib.request.Request(api_url, data=req, headers={'content-type': 'application/json'})
+                    response = urllib.request.urlopen(http_post)
+                    response_str = response.read().decode('utf8')
+                  # print(response_str)
+                    response_dic = json.loads(response_str)
+                  # print(response_dic)
+                    results_text = response_dic['results'][0]['values']['text']
+                    #print(results_text)
+                    result=b2a_hex(results_text.encode()).decode()
+                    #print(result)
+                    mysend(from_sock, json.dumps({"action":"robot", "results":result}))
+                    
+
+           
+
+#=============================================================================#
+#                   The turing Robot
 #==============================================================================
 
         else:
