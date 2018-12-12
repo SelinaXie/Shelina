@@ -38,47 +38,51 @@ class Client():
     #interface    
         self.root = Tkinter.Tk()  
         self.root.title(self.title)  
+        self.root.geometry("600x600")
+        self.root.resizable(width = False, height = False)
           
-        #窗口面板,用4個面板布局  
+        #four windows
         self.frame = [Tkinter.Frame(),Tkinter.Frame(),Tkinter.Frame(),Tkinter.Frame()]  
   
-        #顯示消息Text右邊的滾動條  
+        #ScrollBar  
         self.chatTextScrollBar = Tkinter.Scrollbar(self.frame[0])  
         self.chatTextScrollBar.pack(side=Tkinter.RIGHT,fill=Tkinter.Y)  
           
-        #顯示消息Text，並綁定上面的滾動條  
-        ft = tkFont.Font(family="Fixdsys",size=11)  
-        self.chatText = Tkinter.Listbox(self.frame[0],width=70,height=18,font=ft)  
+        #Display Text along with the scroll bar
+        ft = tkFont.Font(family="Arial",size=16)  
+        self.chatText = Tkinter.Listbox(self.frame[0],width=50,height=18,font=ft)  
         self.chatText['yscrollcommand'] = self.chatTextScrollBar.set  
         self.chatText.pack(expand=1,fill=Tkinter.BOTH)  
         self.chatTextScrollBar['command'] = self.chatText.yview()  
         self.frame[0].pack(expand=1,fill=Tkinter.BOTH)  
           
-        #標簽，分開消息顯示Text和消息輸入Text  
+        #labels
         label = Tkinter.Label(self.frame[1],height=2)  
         label.pack(fill=Tkinter.BOTH)  
         self.frame[1].pack(expand=1,fill=Tkinter.BOTH)  
           
-        #輸入消息Text的滾動條  
+        #inputBox ScrollBar
         self.inputTextScrollBar = Tkinter.Scrollbar(self.frame[2])  
         self.inputTextScrollBar.pack(side=Tkinter.RIGHT,fill=Tkinter.Y)  
           
-        #輸入消息Text，並與滾動條綁定  
-        ft = tkFont.Font(family='Fixdsys',size=11)  
-        self.inputText = Tkinter.Text(self.frame[2],width=70,height=8,font=ft)  
+        #input Text
+        ft = tkFont.Font(family='Arial',size=16)  
+        self.inputText = Tkinter.Text(self.frame[2],width=50,height=8,font=ft)  
         self.inputText['yscrollcommand'] = self.inputTextScrollBar.set  
         self.inputText.pack(expand=1,fill=Tkinter.BOTH)  
         self.inputTextScrollBar['command'] = self.chatText.yview()  
         self.frame[2].pack(expand=1,fill=Tkinter.BOTH)  
           
-        #發送消息按鈕  
+        #Send Button
         self.sendButton=Tkinter.Button(self.frame[3],text=' Send ',width=10,command=self.sendM)  
         self.sendButton.pack(expand=1,side=Tkinter.BOTTOM and Tkinter.RIGHT,padx=15,pady=8)  
   
-        #關閉按鈕  
+        #Quit Button 
         self.closeButton=Tkinter.Button(self.frame[3],text=' Quit ',width=10,command=self.close)  
         self.closeButton.pack(expand=1,side=Tkinter.RIGHT,padx=15,pady=8)  
         self.frame[3].pack(expand=1,fill=Tkinter.BOTH)  
+        
+        
     
     def close(self):  
         sys.exit()
@@ -95,26 +99,48 @@ class Client():
         svr = SERVER if self.args.d == None else (self.args.d, CHAT_PORT)
         self.socket.connect(svr)
         self.sm = csm.ClientSM(self.socket)
-        reading_thread = threading.Thread(target=self.read_input)
-        reading_thread.daemon = True
-        reading_thread.start()
-        self.root.mainloop()
+        
+        self.system_msg += 'Welcome to ICS chat! \n'
+        self.output()
+        self.system_msg += 'Please enter your name: '
+        print('as1')
+        self.output()
+        print('as2')
+        while self.login() != True:
+            self.output()
+        self.system_msg += 'Welcome, ' + self.get_name() + '!'
+        print('as3')
+        self.output()
+
+        while self.sm.get_state() != S_OFFLINE:
+            self.proc()
+            self.output()
+            time.sleep(CHAT_WAIT)
+            
+  
 
     def shutdown_chat(self):
         return
     
     def sendM(self):
-        message = self.inputText.get('1.0',Tkinter.END).encode() 
-        try:
-            self.send(message)
-            self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
-            self.inputText.delete(0.0,message.__len__()-1.0) 
-        except:
-            self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
-            self.inputText.delete(0.0,message.__len__()-1.0) 
+        message = self.newM()
+        if self.read_input(message.decode()):
+        
+            try:
+                self.send(message)
+                self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
+                self.inputText.delete(0.0,message.__len__()-1.0) 
+            except:
+                self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
+                self.inputText.delete(0.0,message.__len__()-1.0) 
+#        return message.decode()
 
     def send(self, msg):
         mysend(self.socket, msg)
+        
+    def newM(self):
+        message = self.inputText.get('1.0',Tkinter.END).encode() 
+        return message
 
     def recv(self):
         return myrecv(self.socket)
@@ -135,14 +161,21 @@ class Client():
             self.chatText.insert(Tkinter.END,'  ' + self.system_msg + '\n') 
             
             self.system_msg = ''
+        self.root.update() 
 
     def login(self):
         my_msg, peer_msg = self.get_msgs()
+        
         if len(my_msg) > 0:
+            print(my_msg)
             self.name = my_msg
+            print('name', self.name)
             msg = json.dumps({"action":"login", "name":self.name})
+            print('here')
             self.send(msg)
+            print('there')
             response = json.loads(self.recv())
+            print('r',response)
             if response["status"] == 'ok':
                 self.state = S_LOGGEDIN
                 self.sm.set_state(S_LOGGEDIN)
@@ -156,37 +189,51 @@ class Client():
            return(False)
 
 
-    def read_input(self):
-        while True:
-            text = self.inputText.get('1.0',Tkinter.END)
+    def read_input(self, text):
+#        text = self.sendM()
+        
+        if len(text.strip())==0:
             
-            if text == '':
-                self.chatText.insert(Tkinter.END,'  a' + text + '\n')
-                continue
-            else:
-                
+            return False
+        else:
+#                self.chatText.insert(Tkinter.END,'  hahah' + text + '2')
+            
 ##            text = sys.stdin.readline()[:-1]
-#                self.chatText.insert(Tkinter.END,'  a' + text + '\n')
-                self.console_input.append(text) # no need for lock, append is thread safe
-                continue
+#                self.chatText.insert(Tkinter.END,'  a' + str(len(text)) + str(text == ' ') + '\n')
+            self.console_input.append(text) # no need for lock, append is thread safe
+            print('s',self.console_input)
+            return True
+            
+            
                 
     def print_instructions(self):
         self.system_msg += menu
 
     def run_chat(self):
-        self.init_chat()
-        self.system_msg += 'Welcome to ICS chat\n'
-        self.system_msg += 'Please enter your name: '
-        self.output()
-        while self.login() != True:
-            self.output()
-        self.system_msg += 'Welcome, ' + self.get_name() + '!'
-        self.output()
-        while self.sm.get_state() != S_OFFLINE:
-            self.proc()
-            self.output()
-            time.sleep(CHAT_WAIT)
-        self.quit()
+        reading_thread = threading.Thread(target=self.init_chat)
+        reading_thread.daemon = True
+        reading_thread.start()
+        
+        
+        print('as')
+#        self.system_msg += 'Welcome to ICS chat\n'
+#        self.system_msg += 'Please enter your name: '
+#        print('as1')
+#        self.output()
+#        print('as2')
+#        while self.login() != True:
+#            self.output()
+#        self.system_msg += 'Welcome, ' + self.get_name() + '!'
+#        print('as3')
+#        self.output()
+#        self.root.mainloop()
+#
+#        while self.sm.get_state() != S_OFFLINE:
+#            self.proc()
+#            self.output()
+#            time.sleep(CHAT_WAIT)
+
+        self.root.mainloop()
 
 
 #==============================================================================
@@ -195,3 +242,16 @@ class Client():
     def proc(self):
         my_msg, peer_msg = self.get_msgs()
         self.system_msg += self.sm.proc(my_msg, peer_msg)
+        
+
+#import argparse
+#parser = argparse.ArgumentParser(description='chat client argument')
+#parser.add_argument('-d', type=str, default=None, help='server IP addr')
+#args = parser.parse_args()
+#client = Client(args)
+#root = client.root
+#client.run_chat()
+#
+#root.mainloop()
+
+
