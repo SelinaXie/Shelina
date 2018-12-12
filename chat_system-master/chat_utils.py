@@ -42,7 +42,6 @@ def print_state(state):
 
 def mysend(s, msg):
     #append size to message and send it
-    print('proc mysend',len(msg),str(msg))
     msg = ('0' * SIZE_SPEC + str(len(msg)))[-SIZE_SPEC:] + str(msg)
     msg = msg.encode()
     total_sent = 0
@@ -58,7 +57,6 @@ def myrecv(s):
     size = ''
     while len(size) < SIZE_SPEC:
         text = s.recv(SIZE_SPEC - len(size)).decode()
-        print('proc myrecv',text,len(text))
         if not text:
             print('disconnected')
             return('')

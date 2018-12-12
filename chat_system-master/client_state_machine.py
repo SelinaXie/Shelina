@@ -59,7 +59,6 @@ class ClientSM:
         self.peer = ''
 
     def proc(self, my_msg, peer_msg):
-        print('in hte sate')
         self.out_msg = ''
 #==============================================================================
 # Once logged in, do a few things: get peer listing, connect, search
@@ -78,17 +77,13 @@ class ClientSM:
                     self.state = S_OFFLINE
 
                 elif my_msg == 'time':
-                    print('in hte time',type(my_msg),my_msg)
                     mysend(self.s, json.dumps({"action":"time"}))
-                    print('here dump')
                     time_in = json.loads(myrecv(self.s))["results"]
-                    print(time_in)
                     self.out_msg += "Time is: " + time_in
 
                 elif my_msg == 'who':
                     mysend(self.s, json.dumps({"action":"list"}))
                     logged_in = json.loads(myrecv(self.s))["results"]
-                    print(logged_in)
                     self.out_msg += 'Here are all the users in the system:\n'
                     self.out_msg += logged_in
 
@@ -180,5 +175,4 @@ class ClientSM:
         else:
             self.out_msg += 'How did you wind up here??\n'
             print_state(self.state)
-        print(self.out_msg)
         return self.out_msg

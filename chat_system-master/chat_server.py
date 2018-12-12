@@ -98,13 +98,11 @@ class Server:
     def handle_msg(self, from_sock):
         #read msg code
         msg = myrecv(from_sock)
-        print('sever ty',type(msg),len(msg),msg)
         if len(msg) > 0:
 #==============================================================================
 # handle connect request
 #==============================================================================
             msg = json.loads(msg)
-            print('sever ty111',type(msg),msg)
             if msg["action"] == "connect":
                 to_name = msg["target"]
                 from_name = self.logged_sock2name[from_sock]
