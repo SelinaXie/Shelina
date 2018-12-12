@@ -16,7 +16,7 @@ menu = "\n++++ Choose one of the following commands\n \
         ? _term_: to search your chat logs where _term_ appears\n \
         p _#_: to get number <#> sonnet\n \
         q: to leave the chat system \n \
-        t: Chat with the Chinese Turing Robot/ English translator \n\n"
+        Me: _content_:Chat with the Turing Robot  \n\n"
 
 S_OFFLINE   = 0
 S_CONNECTED = 1

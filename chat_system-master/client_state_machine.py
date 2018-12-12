@@ -3,9 +3,11 @@ Created on Sun Apr  5 00:00:32 2015
 
 @author: zhengzhang
 """
-import urllib.request
+import pygame
+pygame.mixer.init()
 from chat_utils import *
 import json
+from binascii import b2a_hex, a2b_hex
 from Encrypt import *
 pk=prpcrypt('keyskeyskeyskeys') #16 digits
 
@@ -36,6 +38,10 @@ class ClientSM:
         if response["status"] == "success":
             self.peer = peer
             self.out_msg += 'You are connected with '+ self.peer + '\n'
+            pygame.mixer.music.load("Connect.mp3")
+            if pygame.mixer.music.get_busy()==False:
+              pygame.mixer.music.play()
+            
             return (True)
         elif response["status"] == "busy":
             self.out_msg += 'User is busy. Please try again later\n'
@@ -48,6 +54,7 @@ class ClientSM:
     def disconnect(self):
         msg = json.dumps({"action":"disconnect"})
         mysend(self.s, msg)
+
         self.out_msg += 'You are disconnected from ' + self.peer + '\n'
         self.peer = ''
 
@@ -63,6 +70,9 @@ class ClientSM:
             if len(my_msg) > 0:
 
                 if my_msg == 'q':
+                    bye=pygame.mixer.Sound("Goodbye.wav")
+                    bye.play()
+                    pygame.time.delay(5000)
                     self.out_msg += 'See you next time!\n'
                     self.state = S_OFFLINE
 
@@ -104,64 +114,18 @@ class ClientSM:
                     if (len(poem) > 0):
                         self.out_msg += poem + '\n\n'
                     else:
-                        self.out_msg += 'Sonnet2333' + poem_idx + ' not found\n\n'
+                        self.out_msg += 'Sonnet' + poem_idx + ' not found\n\n'
+
+                elif my_msg[0:3]== 'Me:':
+                    content=my_msg[3:].strip()
+                    mysend(self.s, json.dumps({"action":"robot", "target":content}))
+                    result=json.loads(myrecv(self.s))["results"]
+                    result_decode=a2b_hex(result.encode()).decode()
+                    self.out_msg += "Turing:"+ result_decode + '\n\n'
+                     
                         
-                elif my_msg[0] == 't' :
-                    while True:
-                        text_input = input()
-                        
-                        if text_input == 'q':
-                            break
-                        else:
-                    
-                        
-                            api_url = "http://openapi.tuling123.com/openapi/api/v2"
-                            
-
-                            req = {
-                                "perception":
-                               {
-                                    "inputText":
-                                    {
-                                       "text": text_input
-                                    },
-
-                                    "selfInfo":
-                                    {
-                                        "location":
-                                        {
-                                            "city": "上海",
-                                            "province": "上海",
-                                            "street": "文汇路"
-                                        }
-                                    }
-                                },
-
-                                "userInfo": 
-                                {
-                                    "apiKey": "0cf352ad917f4e7f9a1f56bc70db712a",
-                                    "userId": "ABC" 
-                                }
-                            }
-                          # print(req)
-                          # 将字典格式的req编码为utf8 
-                            req = json.dumps(req).encode('utf8')
-                          # print(req)
-
-
-                            http_post = urllib.request.Request(api_url, data=req, headers={'content-type': 'application/json'})
-                            response = urllib.request.urlopen(http_post)
-                            response_str = response.read().decode('utf8')
-                          # print(response_str)
-                            response_dic = json.loads(response_str)
-                          # print(response_dic)
-                            results_text = response_dic['results'][0]['values']['text']
-                            print('Turing的回答：',results_text)
-                           
-
-
-                          
-               
+                
+                         
 
                 else:
                     self.out_msg += menu
@@ -196,7 +160,10 @@ class ClientSM:
                 elif peer_msg["action"] == "disconnect":
                     self.state = S_LOGGEDIN
                 else:
+
                     self.out_msg += peer_msg["from"] + pk.decrypt(peer_msg["message"])
+                    new=pygame.mixer.Sound("New.wav")
+                    new.play()
 
 
             # Display the menu again
