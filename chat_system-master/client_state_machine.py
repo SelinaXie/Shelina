@@ -9,7 +9,7 @@ from chat_utils import *
 import json
 from binascii import b2a_hex, a2b_hex
 from Encrypt import *
-pk=prpcrypt('keyskeyskeyskeys') #16 digits
+pk=encryptor('keyskeyskeyskeys') #16 
 
 class ClientSM:
     def __init__(self, s):
