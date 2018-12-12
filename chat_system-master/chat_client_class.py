@@ -115,25 +115,26 @@ class Client():
     def sendM(self):
         message = self.inputText.get('1.0',Tkinter.END).encode() 
         if self.sm.get_state() == S_OFFLINE:
-            self.name = message.decode()
+            self.name = message.strip().decode()
             if self.login() != True:
                 self.output()
             self.inputText.delete(0.0,message.__len__()-1.0)
-            self.system_msg += 'Welcome, ' + self.get_name().strip() + '!'
+            self.system_msg += 'Welcome, ' + self.get_name() + '!'
             self.output()
             if self.sm.get_state() != S_OFFLINE:
                 self.proc()
                 self.output()
                 time.sleep(CHAT_WAIT)
-                self.flag = True
 #                print(self.flag,'haa')
 #            self.quit()
         else:
-            self.console_input.append(message.decode().strip()) # no need for lock, append is thread safe
+            self.console_input.append(message.strip().decode()) # no need for lock, append is thread safe
             print(self.console_input)
             self.proc()
-            self.send(message)
-            self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
+            self.send(message.strip().decode())
+            print('send')
+            print('s',message.strip().decode())
+            self.chatText.insert(Tkinter.END,'   ' + message.strip().decode() + '\n')   
             self.inputText.delete(0.0,message.__len__()-1.0) 
            
         
@@ -178,6 +179,7 @@ class Client():
         #peer_code = M_UNDEF    for json data, peer_code is redundant
         if len(self.console_input) > 0:
             my_msg = self.console_input.pop(0)
+            print('getms',my_msg)
         if self.socket in read:
             peer_msg = self.recv()
         return my_msg, peer_msg
@@ -208,44 +210,7 @@ class Client():
                 return False
         else:               # fix: dup is only one of the reasons
            return(False)
-           
-#        if len(my_msg) > 0:
-#            print(my_msg)
-#            self.name = my_msg
-#            print('name', self.name)
-#            msg = json.dumps({"action":"login", "name":self.name})
-#            print('here')
-#            self.send(msg)
-#            print('there')
-#            response = json.loads(self.recv())
-#            print('r',response)
-#            if response["status"] == 'ok':
-#                self.state = S_LOGGEDIN
-#                self.sm.set_state(S_LOGGEDIN)
-#                self.sm.set_myname(self.name)
-#                self.print_instructions()
-#                return (True)
-#            elif response["status"] == 'duplicate':
-#                self.system_msg += 'Duplicate username, try again'
-#                return False
-#        else:               # fix: dup is only one of the reasons
-#           return(False)
 
-
-    def read_input(self, text):
-#        text = self.sendM()
-        
-        if len(text.strip())==0:
-            
-            return False
-        else:
-#                self.chatText.insert(Tkinter.END,'  hahah' + text + '2')
-            
-##            text = sys.stdin.readline()[:-1]
-#                self.chatText.insert(Tkinter.END,'  a' + str(len(text)) + str(text == ' ') + '\n')
-            self.console_input.append(text) # no need for lock, append is thread safe
-            print('s',self.console_input)
-            return True
             
             
                 
@@ -256,26 +221,6 @@ class Client():
         reading_thread = threading.Thread(target=self.init_chat)
         reading_thread.daemon = True
         reading_thread.start()
-        
-        
-        print('as')
-#        self.system_msg += 'Welcome to ICS chat\n'
-#        self.system_msg += 'Please enter your name: '
-#        print('as1')
-#        self.output()
-#        print('as2')
-#        while self.login() != True:
-#            self.output()
-#        self.system_msg += 'Welcome, ' + self.get_name() + '!'
-#        print('as3')
-#        self.output()
-#        self.root.mainloop()
-#
-#        while self.sm.get_state() != S_OFFLINE:
-#            self.proc()
-#            self.output()
-#            time.sleep(CHAT_WAIT)
-
         self.root.mainloop()
 
 
@@ -285,6 +230,7 @@ class Client():
     def proc(self):
         my_msg, peer_msg = self.get_msgs()
         self.system_msg += self.sm.proc(my_msg, peer_msg)
+        self.output()
         
 
 #import argparse
