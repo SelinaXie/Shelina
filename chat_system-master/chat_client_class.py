@@ -100,39 +100,74 @@ class Client():
         self.socket.connect(svr)
         self.sm = csm.ClientSM(self.socket)
         
-        self.system_msg += 'Welcome to ICS chat! \n'
+        self.system_msg += 'Welcome to ICS chat!'
         self.output()
-        self.system_msg += 'Please enter your name: '
+        self.system_msg += 'Please enter your name:'
         print('as1')
         self.output()
-        print('as2')
-        while self.login() != True:
-            self.output()
-        self.system_msg += 'Welcome, ' + self.get_name() + '!'
-        print('as3')
-        self.output()
-
-        while self.sm.get_state() != S_OFFLINE:
-            self.proc()
-            self.output()
-            time.sleep(CHAT_WAIT)
-            
+#        print('as2')
+#        while self.login() != True:
+#            self.output()
+#        self.system_msg += 'Welcome, ' + self.get_name() + '!'
+#        print('as3')
+#        self.output()
+#
+#        while self.sm.get_state() != S_OFFLINE:
+#            self.proc()
+#            self.output()
+#            time.sleep(CHAT_WAIT)
+#            
   
 
     def shutdown_chat(self):
         return
     
     def sendM(self):
-        message = self.newM()
-        if self.read_input(message.decode()):
-        
+        message = self.inputText.get('1.0',Tkinter.END).encode() 
+        if self.sm.get_state() == S_OFFLINE:
+            self.name = message.decode()
+            if self.login() != True:
+                self.output()
+            self.inputText.delete(0.0,message.__len__()-1.0)
+            self.system_msg += 'Welcome, ' + self.get_name().strip() + '!'
+            self.output()
+            if self.sm.get_state() != S_OFFLINE:
+                self.proc()
+                self.output()
+                time.sleep(CHAT_WAIT)
+            self.quit()
+        else:
             try:
+                self.console_input.append(text) # no need for lock, append is thread safe
                 self.send(message)
-                self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
+                self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
                 self.inputText.delete(0.0,message.__len__()-1.0) 
             except:
-                self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
+                self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
                 self.inputText.delete(0.0,message.__len__()-1.0) 
+        
+        
+        
+#        message = self.inputText.get('1.0',Tkinter.END).encode()
+#        if self.sm.get_state() == S_OFFLINE:
+#            self.name = message.decode()
+#            if self.login() != True:
+#                self.output()
+#            self.output() 
+#            self.system_msg += 'Welcome, ' + self.get_name() + '!'
+#            self.output()  
+#            self.inputText.delete(0.0,message.__len__()-1.0)  
+#            if self.sm.get_state() != S_OFFLINE:
+#                self.proc()
+#                self.output()
+#                time.sleep(CHAT_WAIT)
+#            self.quit()
+#            
+#        else:
+#            self.send(message)
+#            self.chatText.insert(Tkinter.END,'  ' + message.decode() + '\n')   
+#            self.inputText.delete(0.0,message.__len__()-1.0) 
+          
 #        return message.decode()
 
     def send(self, msg):
@@ -158,20 +193,15 @@ class Client():
 
     def output(self):
         if len(self.system_msg) > 0:
-            self.chatText.insert(Tkinter.END,'  ' + self.system_msg + '\n') 
+            for i in self.system_msg.split('\n'):
+                self.chatText.insert(Tkinter.END,'   ' + i + '\n') 
             
             self.system_msg = ''
-        self.root.update() 
 
     def login(self):
-        my_msg, peer_msg = self.get_msgs()
-        
-        if len(my_msg) > 0:
-            print(my_msg)
-            self.name = my_msg
-            print('name', self.name)
+#        my_msg, peer_msg = self.get_msgs()
+        if len(self.name) > 0:
             msg = json.dumps({"action":"login", "name":self.name})
-            print('here')
             self.send(msg)
             print('there')
             response = json.loads(self.recv())
@@ -187,6 +217,28 @@ class Client():
                 return False
         else:               # fix: dup is only one of the reasons
            return(False)
+           
+#        if len(my_msg) > 0:
+#            print(my_msg)
+#            self.name = my_msg
+#            print('name', self.name)
+#            msg = json.dumps({"action":"login", "name":self.name})
+#            print('here')
+#            self.send(msg)
+#            print('there')
+#            response = json.loads(self.recv())
+#            print('r',response)
+#            if response["status"] == 'ok':
+#                self.state = S_LOGGEDIN
+#                self.sm.set_state(S_LOGGEDIN)
+#                self.sm.set_myname(self.name)
+#                self.print_instructions()
+#                return (True)
+#            elif response["status"] == 'duplicate':
+#                self.system_msg += 'Duplicate username, try again'
+#                return False
+#        else:               # fix: dup is only one of the reasons
+#           return(False)
 
 
     def read_input(self, text):

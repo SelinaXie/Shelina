@@ -10,7 +10,6 @@ def main():
     
     client.run_chat()
     
-#    client.root.mainloop()
     
 if __name__ == '__main__':
     main()
