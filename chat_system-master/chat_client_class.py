@@ -34,6 +34,7 @@ class Client():
         self.local_msg = ''
         self.peer_msg = ''
         self.args = args
+        self.flag = False
         
     #interface    
         self.root = Tkinter.Tk()  
@@ -105,20 +106,9 @@ class Client():
         self.system_msg += 'Please enter your name:'
         print('as1')
         self.output()
-#        print('as2')
-#        while self.login() != True:
-#            self.output()
-#        self.system_msg += 'Welcome, ' + self.get_name() + '!'
-#        print('as3')
-#        self.output()
-#
-#        while self.sm.get_state() != S_OFFLINE:
-#            self.proc()
-#            self.output()
-#            time.sleep(CHAT_WAIT)
-#            
-  
-
+      
+#        self.quit()
+ 
     def shutdown_chat(self):
         return
     
@@ -135,16 +125,17 @@ class Client():
                 self.proc()
                 self.output()
                 time.sleep(CHAT_WAIT)
-            self.quit()
+                self.flag = True
+#                print(self.flag,'haa')
+#            self.quit()
         else:
-            try:
-                self.console_input.append(text) # no need for lock, append is thread safe
-                self.send(message)
-                self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
-                self.inputText.delete(0.0,message.__len__()-1.0) 
-            except:
-                self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
-                self.inputText.delete(0.0,message.__len__()-1.0) 
+            self.console_input.append(message.decode().strip()) # no need for lock, append is thread safe
+            print(self.console_input)
+            self.proc()
+            self.send(message)
+            self.chatText.insert(Tkinter.END,'   ' + message.decode() + '\n')   
+            self.inputText.delete(0.0,message.__len__()-1.0) 
+           
         
         
         
