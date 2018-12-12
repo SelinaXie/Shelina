@@ -7,9 +7,24 @@ from chat_utils import *
 import client_state_machine as csm
 
 
+import tkinter as Tkinter
+import tkinter.font as tkFont
+
+
+import tk 
 import threading
 
-class Client:
+
+# =============================================================================
+# interface
+# =============================================================================
+
+
+# =============================================================================
+# Client
+# =============================================================================
+
+class Client():
     def __init__(self, args):
         self.peer = ''
         self.console_input = []
@@ -18,6 +33,7 @@ class Client:
         self.local_msg = ''
         self.peer_msg = ''
         self.args = args
+        self.gui = tk.interface()
 
     def quit(self):
         self.socket.shutdown(socket.SHUT_RDWR)
@@ -57,7 +73,8 @@ class Client:
 
     def output(self):
         if len(self.system_msg) > 0:
-            print(self.system_msg)
+            self.gui.chatText.insert(Tkinter.END,'  ' + self.system_msg + '\n') 
+            
             self.system_msg = ''
 
     def login(self):
@@ -82,13 +99,22 @@ class Client:
 
     def read_input(self):
         while True:
-            text = sys.stdin.readline()[:-1]
-            self.console_input.append(text) # no need for lock, append is thread safe
-
+            
+#            text = self.gui.inputText.get('1.0',Tkinter.END) 
+            try:
+                text = self.gui.sendMessage() 
+#            text = sys.stdin.readline()[:-1]
+                self.gui.chatText.insert(Tkinter.END,'  a' + text + '\n')
+                self.console_input.append(text) # no need for lock, append is thread safe
+                continue
+            except:
+                self.gui.root.update()
+                
     def print_instructions(self):
         self.system_msg += menu
 
     def run_chat(self):
+        self.gui.run()
         self.init_chat()
         self.system_msg += 'Welcome to ICS chat\n'
         self.system_msg += 'Please enter your name: '
@@ -102,6 +128,7 @@ class Client:
             self.output()
             time.sleep(CHAT_WAIT)
         self.quit()
+
 
 #==============================================================================
 # main processing loop

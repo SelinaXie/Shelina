@@ -184,7 +184,7 @@ class ClientSM:
             if len(my_msg) > 0: # my stuff going out
                 #encrypt
                 my_msg_en=pk.encrypt(my_msg)
-                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message":my_msg_en}))
+                mysend(self.s, json.dumps({"action":"exchange", "from":"[" + self.me + "]", "message": my_msg_en}))
                 if my_msg == 'bye':
                     self.disconnect()
                     self.state = S_LOGGEDIN
