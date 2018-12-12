@@ -9,5 +9,9 @@ def main():
 
     client = Client(args)
     client.run_chat()
+#    client.root.mainloop()
+    
+if __name__ == '__main__':
+    main()
+    client.root.mainloop()
 
-main()

@@ -72,7 +72,7 @@ class Client():
         self.frame[2].pack(expand=1,fill=Tkinter.BOTH)  
           
         #發送消息按鈕  
-        self.sendButton=Tkinter.Button(self.frame[3],text=' Send ',width=10,command=self.sendM())  
+        self.sendButton=Tkinter.Button(self.frame[3],text=' Send ',width=10,command=self.sendM)  
         self.sendButton.pack(expand=1,side=Tkinter.BOTTOM and Tkinter.RIGHT,padx=15,pady=8)  
   
         #關閉按鈕  
@@ -98,6 +98,7 @@ class Client():
         reading_thread = threading.Thread(target=self.read_input)
         reading_thread.daemon = True
         reading_thread.start()
+        self.root.mainloop()
 
     def shutdown_chat(self):
         return
@@ -158,12 +159,14 @@ class Client():
     def read_input(self):
         while True:
             text = self.inputText.get('1.0',Tkinter.END)
+            
             if text == '':
+                self.chatText.insert(Tkinter.END,'  a' + text + '\n')
                 continue
             else:
                 
-#            text = sys.stdin.readline()[:-1]
-                self.chatText.insert(Tkinter.END,'  a' + text + '\n')
+##            text = sys.stdin.readline()[:-1]
+#                self.chatText.insert(Tkinter.END,'  a' + text + '\n')
                 self.console_input.append(text) # no need for lock, append is thread safe
                 continue
                 
