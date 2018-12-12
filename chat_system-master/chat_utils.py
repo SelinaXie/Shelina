@@ -58,6 +58,7 @@ def myrecv(s):
     size = ''
     while len(size) < SIZE_SPEC:
         text = s.recv(SIZE_SPEC - len(size)).decode()
+        print('proc myrecv',text,len(text))
         if not text:
             print('disconnected')
             return('')
