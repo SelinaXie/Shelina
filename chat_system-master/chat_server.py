@@ -157,7 +157,6 @@ class Server:
 #                 time
 #==============================================================================
             elif msg["action"] == "time":
-                print('sever ty',type(msg))
                 ctime = time.strftime('%d.%m.%y,%H:%M', time.localtime())
                 mysend(from_sock, json.dumps({"action":"time", "results":ctime}))
 #==============================================================================

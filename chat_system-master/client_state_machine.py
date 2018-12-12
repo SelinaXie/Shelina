@@ -38,9 +38,8 @@ class ClientSM:
         if response["status"] == "success":
             self.peer = peer
             self.out_msg += 'You are connected with '+ self.peer + '\n'
-            pygame.mixer.music.load("Connect.mp3")
-            if pygame.mixer.music.get_busy()==False:
-              pygame.mixer.music.play()
+            c=pygame.mixer.Sound("connect.wav")
+            c.play()
             
             return (True)
         elif response["status"] == "busy":
